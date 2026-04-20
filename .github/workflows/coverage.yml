@@ -1,0 +1,35 @@
+name: Coverage
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run coverage
+        run: mvn -B verify jacoco:report
+
+      - name: Upload everything for debugging
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-debug
+          path: |
+            ./**
+            !**/*.class
+          retention-days: 3

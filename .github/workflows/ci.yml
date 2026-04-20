@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions: write-all
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          path: repo
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run tests
+        working-directory: repo
+        run: mvn -B test
+
+      - name: Generate coverage report
+        working-directory: repo
+        run: mvn -B jacoco:report
+
+      - name: Upload test + repo snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: repo/
+          retention-days: 14
